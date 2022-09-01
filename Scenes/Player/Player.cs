@@ -9,13 +9,13 @@ public sealed class Player : KinematicBody
 
 	[Export] public float WalkSpeed = 4f;
 	[Export] public float Acceleration = 50;
-	[Export] public float Friction = 1.2f;
+	[Export] public float Friction = 10f;
 
 	#endregion
 
 	#region Public members
 
-	
+	public Vector2 LocalMoveDirection;
 
 	#endregion
 
@@ -26,7 +26,7 @@ public sealed class Player : KinematicBody
 		_gravityMagnitude = GravityMagnitudeFromSettings;
 		_walkSpeedSquared = WalkSpeed * WalkSpeed;
 
-		if (Friction <= 1) throw new Exception("Friction must be greater than 1");
+		if (Friction <= 0) throw new Exception("Friction must be greater than 0");
 	}
 
 	public override void _PhysicsProcess(float delta)
@@ -48,14 +48,15 @@ public sealed class Player : KinematicBody
 
 	private void Move(float delta)
 	{
-		Vector2 localDirection = Input.GetVector("move_left", "move_right", "move_back", "move_forward");
-		localDirection.y = -localDirection.y;
+		LocalMoveDirection = Input.GetVector("move_left", "move_right", "move_back", "move_forward");
+		Vector2 localDirection = new(LocalMoveDirection.x, -LocalMoveDirection.y);
 		Vector2 globalDirection = localDirection.Rotated(-Rotation.y);
 		Vector2 acceleration = globalDirection * Acceleration * delta;
 		Vector2 velocity = new(_velocity.x, _velocity.z);
-		velocity /= Friction;
+		velocity /= 1 + Friction * delta;
 		velocity += acceleration;
 		if (velocity.LengthSquared() > _walkSpeedSquared) velocity = velocity.Normalized() * WalkSpeed;
+		
 		_velocity = MoveAndSlide(new Vector3(velocity.x, _velocity.y - _gravityMagnitude * delta, velocity.y));
 	}
 
