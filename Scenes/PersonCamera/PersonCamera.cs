@@ -26,6 +26,7 @@ public sealed class PersonCamera : Spatial
 		catch
 		{
 			SetProcessInput(false);
+			throw;
 		}
 	}
 
