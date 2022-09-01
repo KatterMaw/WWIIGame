@@ -38,6 +38,16 @@ public sealed class PersonCamera : Spatial
 		Rotate(vector2);
 	}
 
+	public override void _Process(float delta)
+	{
+		if (Input.IsActionJustPressed("toggle_view"))
+		{
+			int newDistance = _isFirstPerson ? 4 : 0;
+			_isFirstPerson = !_isFirstPerson;
+			_hinge.Translation = Vector3.Back * newDistance;
+		}
+	}
+
 	private float PrepareRawMouseInput(float rawValue) => Mathf.Deg2Rad(rawValue) * -MouseSensitivity;
 
 	#endregion
@@ -45,14 +55,18 @@ public sealed class PersonCamera : Spatial
 	#region Private members
 	
 	private const string VerticalRotateNodePath = "VerticalRotate";
+	private const string HingeNodePath = "VerticalRotate/Hinge";
 	private const string ControlledEntityExceptionMessage = "Controlled Entity property was set, but it's not Spatial or don't exist in tree";
 	private const string OwnerException = "Camera has no owner, or owner is not spatial node, so, it can't work";
 
 	private Spatial _verticalRotate = null!;
 	private Spatial _controlledEntity = null!;
+	private Spatial _hinge = null!;
 
 	private float _maxVerticalRotationInRadians;
 	private float _minVerticalRotationInRadians;
+
+	private bool _isFirstPerson = true;
 
 	#endregion
 
@@ -68,11 +82,12 @@ public sealed class PersonCamera : Spatial
 	private void InitializeNodes()
 	{
 		_verticalRotate = GetNode<Spatial>(VerticalRotateNodePath);
-		if (_verticalRotate == null) throw new Exception("Cannot found Spatial node by path \"VerticalRotate\"");
 
 		_controlledEntity = ControlledEntity == null
 			? GetOwnerOrNull<Spatial>() ?? throw new Exception(OwnerException)
 			: GetNodeOrNull<Spatial>(ControlledEntity) ?? throw new Exception(ControlledEntityExceptionMessage);
+
+		_hinge = GetNode<Spatial>(HingeNodePath);
 	}
 
 	private void InitializeValues()

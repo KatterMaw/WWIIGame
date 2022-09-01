@@ -7,5 +7,7 @@ script = ExtResource( 1 )
 
 [node name="VerticalRotate" type="Spatial" parent="."]
 
-[node name="Camera" type="Camera" parent="VerticalRotate"]
+[node name="Hinge" type="Spatial" parent="VerticalRotate"]
+
+[node name="Camera" type="Camera" parent="VerticalRotate/Hinge"]
 current = true
