@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using WWIIGame.Misc;
 
 namespace WWIIGame.Scenes;
 
@@ -10,6 +11,7 @@ public sealed class Player : KinematicBody
 	[Export] public float WalkSpeed = 4f;
 	[Export] public float Acceleration = 50;
 	[Export] public float Friction = 10f;
+	[Export] public float MaxSpeedToFullSpeed = 0.1f;
 
 	#endregion
 
@@ -23,16 +25,14 @@ public sealed class Player : KinematicBody
 
 	public override void _Ready()
 	{
-		_gravityMagnitude = GravityMagnitudeFromSettings;
+		_gravityMagnitude = Settings.GravityMagnitude;
 		_walkSpeedSquared = WalkSpeed * WalkSpeed;
+		_maxSpeedToFullStopSquared = MaxSpeedToFullSpeed * MaxSpeedToFullSpeed;
 
 		if (Friction <= 0) throw new Exception("Friction must be greater than 0");
 	}
 
-	public override void _PhysicsProcess(float delta)
-	{
-		Move(delta);
-	}
+	public override void _PhysicsProcess(float delta) => Move(delta);
 
 	#endregion
 
@@ -41,6 +41,7 @@ public sealed class Player : KinematicBody
 	private Vector3 _velocity = Vector3.Zero;
 	private float _gravityMagnitude;
 	private float _walkSpeedSquared;
+	private float _maxSpeedToFullStopSquared;
 
 	#endregion
 
@@ -49,19 +50,22 @@ public sealed class Player : KinematicBody
 	private void Move(float delta)
 	{
 		LocalMoveDirection = Input.GetVector("move_left", "move_right", "move_back", "move_forward");
-		Vector2 localDirection = new(LocalMoveDirection.x, -LocalMoveDirection.y);
-		Vector2 globalDirection = localDirection.Rotated(-Rotation.y);
-		Vector2 acceleration = globalDirection * Acceleration * delta;
-		Vector2 velocity = new(_velocity.x, _velocity.z);
-		velocity /= 1 + Friction * delta;
-		velocity += acceleration;
-		if (velocity.LengthSquared() > _walkSpeedSquared) velocity = velocity.Normalized() * WalkSpeed;
-		
-		_velocity = MoveAndSlide(new Vector3(velocity.x, _velocity.y - _gravityMagnitude * delta, velocity.y));
+		Vector2 horizontalVelocity = new(_velocity.x, _velocity.z);
+		if (LocalMoveDirection != Vector2.Zero)
+		{
+			Vector2 localDirection = new(LocalMoveDirection.x, -LocalMoveDirection.y);
+			Vector2 globalDirection = localDirection.Rotated(-Rotation.y);
+			Vector2 acceleration = globalDirection * Acceleration;
+			horizontalVelocity /= 1 + Friction * delta;
+			horizontalVelocity += acceleration * delta;
+			if (horizontalVelocity.LengthSquared() > _walkSpeedSquared) horizontalVelocity = horizontalVelocity.Normalized() * WalkSpeed;
+		}
+		else horizontalVelocity /= 1 + Friction * delta;
+
+		_velocity = MoveAndSlide(new Vector3(horizontalVelocity.x, _velocity.y - _gravityMagnitude * delta, horizontalVelocity.y));
+		if (_velocity.LengthSquared() <= _maxSpeedToFullStopSquared) _velocity = Vector3.Zero;
 	}
 
-	private static float GravityMagnitudeFromSettings => (float) ProjectSettings.GetSetting("physics/3d/default_gravity");
-
 	#endregion
-	
+
 }
