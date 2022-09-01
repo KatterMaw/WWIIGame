@@ -1,0 +1,11 @@
+<Project Sdk="Godot.NET.Sdk/3.3.0">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>WwiiGame</RootNamespace>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Misc" />
+  </ItemGroup>
+</Project>
