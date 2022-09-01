@@ -7,6 +7,7 @@ public sealed class PersonCamera : Spatial
 {
 	#region Export properties
 
+	[Export] public NodePath? ControlledEntity;
 	[Export] public float MouseSensitivity = 0.2f;
 	[Export] public float MaxVerticalRotation = 90;
 	[Export] public float MinVerticalRotation = -90;
@@ -43,7 +44,9 @@ public sealed class PersonCamera : Spatial
 	#region Private members
 	
 	private const string VerticalRotateNodePath = "VerticalRotate";
-	
+	private const string ControlledEntityExceptionMessage = "Controlled Entity property was set, but it's not Spatial or don't exist in tree";
+	private const string OwnerException = "Camera has no owner, or owner is not spatial node, so, it can't work";
+
 	private Spatial _verticalRotate = null!;
 	private Spatial _controlledEntity = null!;
 
@@ -66,8 +69,9 @@ public sealed class PersonCamera : Spatial
 		_verticalRotate = GetNode<Spatial>(VerticalRotateNodePath);
 		if (_verticalRotate == null) throw new Exception("Cannot found Spatial node by path \"VerticalRotate\"");
 
-		_controlledEntity = GetOwner<Spatial>();
-		if (_controlledEntity == null) throw new Exception("Camera has no owner, or owner is not spatial node, so, it can't work");
+		_controlledEntity = ControlledEntity == null
+			? GetOwnerOrNull<Spatial>() ?? throw new Exception(OwnerException)
+			: GetNodeOrNull<Spatial>(ControlledEntity) ?? throw new Exception(ControlledEntityExceptionMessage);
 	}
 
 	private void InitializeValues()
