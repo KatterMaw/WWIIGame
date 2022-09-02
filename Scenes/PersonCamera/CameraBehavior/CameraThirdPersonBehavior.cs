@@ -4,15 +4,15 @@ namespace WWIIGame.Scenes.CameraBehavior;
 
 public abstract class CameraThirdPersonBehavior
 {
-	protected float CurrentDistance => _hinge.Translation.z;
+	public float CurrentDistance => _hinge.Translation.z;
 	
 	private readonly Spatial _hinge;
 	private readonly Tween _tween;
 	private readonly float _tweenDuration;
 
 	private static readonly NodePath TranslationPath = new("translation:z");
-	
-	public CameraThirdPersonBehavior(Spatial hinge, Tween tween, float tweenDuration)
+
+	protected CameraThirdPersonBehavior(Spatial hinge, Tween tween, float tweenDuration)
 	{
 		_hinge = hinge;
 		_tween = tween;

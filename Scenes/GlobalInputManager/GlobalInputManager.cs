@@ -4,7 +4,7 @@ namespace WWIIGame.Scenes;
 
 public sealed class GlobalInputManager : Node
 {
-	public static GlobalInputManager Instance { get; private set; }
+	public static GlobalInputManager Instance { get; private set; } = null!;
 	
 	public override void _Ready() => Instance = this;
 

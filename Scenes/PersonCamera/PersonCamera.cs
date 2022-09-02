@@ -13,14 +13,13 @@ public sealed class PersonCamera : Spatial
 	[Export] public float MaxVerticalRotation = 90;
 	[Export] public float MinVerticalRotation = -90;
 	[Export] public ViewType DefaultView = ViewType.FirstPerson;
-	[Export] public float DefaultThirdPersonDistance = 4;
+	[Export] public ThirdPersonMode ThirdPersonMode = ThirdPersonMode.Scrollable;
 	[Export] public float MinThirdPersonDistance = 1;
 	[Export] public float MaxThirdPersonDistance = 10;
-	[Export] public ThirdPersonMode ThirdPersonMode = ThirdPersonMode.Scrollable;
 	[Export] public float CloseDistance = 2;
 	[Export] public float MidDistance = 4;
 	[Export] public float FarDistance = 6;
-	[Export] public float TweenDuration = 0.5f;
+	[Export] public float TweenDuration = 0.2f;
 	[Export] public float ZoomStep = 0.5f;
 
 	#endregion
@@ -50,16 +49,6 @@ public sealed class PersonCamera : Spatial
 		Rotate(vector2);
 	}
 
-	public override void _Process(float delta)
-	{
-		/*if (Input.IsActionJustPressed("toggle_view"))
-		{
-			int newDistance = _isFirstPerson ? 4 : 0;
-			_isFirstPerson = !_isFirstPerson;
-			_hinge.Translation = Vector3.Back * newDistance;
-		}*/
-	}
-
 	private float PrepareRawMouseInput(float rawValue) => Mathf.Deg2Rad(rawValue) * -MouseSensitivity;
 
 	#endregion
@@ -80,9 +69,7 @@ public sealed class PersonCamera : Spatial
 	private float _maxVerticalRotationInRadians;
 	private float _minVerticalRotationInRadians;
 
-	private bool _isFirstPerson = true;
-
-	private CameraThirdPersonBehavior _behavior;
+	private CameraThirdPersonBehavior _behavior = null!;
 
 	#endregion
 
@@ -113,17 +100,14 @@ public sealed class PersonCamera : Spatial
 
 	private void InitializeViewMode()
 	{
-		switch (ThirdPersonMode)
+		_behavior = ThirdPersonMode switch
 		{
-			case ThirdPersonMode.ChainToggle:
-				_behavior = new ToggleChainBehavior(_hinge, _tween, TweenDuration, CloseDistance, MidDistance, FarDistance);
-				break;
-			case ThirdPersonMode.Scrollable:
-				_behavior = new ScrollBehavior(_hinge, _tween, TweenDuration, ZoomStep, MinThirdPersonDistance, MaxThirdPersonDistance);
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
-		}
+			ThirdPersonMode.ChainToggle => new ToggleChainBehavior(_hinge, _tween, TweenDuration, CloseDistance,
+				MidDistance, FarDistance),
+			ThirdPersonMode.Scrollable => new ScrollBehavior(_hinge, _tween, TweenDuration, ZoomStep,
+				MinThirdPersonDistance, MaxThirdPersonDistance),
+			_ => throw new ArgumentOutOfRangeException()
+		};
 	}
 
 	#endregion

@@ -18,11 +18,7 @@ public sealed class ToggleChainBehavior : CameraThirdPersonBehavior
 		if (Input.IsActionJustPressed("toggle_view")) ToggleView();
 	}
 
-	private void ToggleView()
-	{
-		float newDistance = GetNextDistance();
-		SetDistance(newDistance);
-	}
+	private void ToggleView() => SetDistance(GetNextDistance());
 
 	private float GetNextDistance()
 	{
